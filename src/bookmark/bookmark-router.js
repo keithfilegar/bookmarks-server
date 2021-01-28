@@ -15,7 +15,7 @@ bookmarkRouter
     })
     .post(bodyParser, (req, res) => {
         const { title, url, rating, desc = '' } = req.body
-        console.log(`Rating is ${rating}`)
+        
         if(!title) {
             logger.error(`Title is required`)
             return res
