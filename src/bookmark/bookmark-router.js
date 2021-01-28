@@ -14,6 +14,7 @@ bookmarkRouter
     })
     .post(bodyParser, (req, res) => {
         const { title, url, rating, desc = '' } = req.body
+        console.log(`Rating is ${rating}`)
         if(!title) {
             logger.error(`Title is required`)
             return res
@@ -35,8 +36,8 @@ bookmarkRouter
                 .send('Invalid data')
         }
 
-        if(rating < 1 || rating > 5) {
-            logger.error('Rating must be between 1 and 5')
+        if(!Number.isInteger(rating) || rating < 1 || rating > 5) {
+            logger.error('Rating must be a number between 1 and 5')
             return res
                 .status(400)
                 .send('Invalid data')
@@ -65,10 +66,36 @@ bookmarkRouter
 bookmarkRouter
     .route('/bookmarks/:id')
     .get((req, res) => {
+        const { id } = req.params
+        const bookmark = bookmarks.find(b => b.id == id)
 
+        if(!bookmark) {
+            logger.error(`Bookmark with id: ${id} not found`)
+            return res
+                .status(404)
+                .send('Bookmark not found')
+        }
+
+        res.json(bookmark)
     })
-    .post((req, res) => {
+    .delete((req, res) => {
+        const { id } = req.params
 
+        const bookmarkIndex = bookmarks.findIndex(bi => bi.id == id)
+        
+        if(bookmarkIndex === -1) {
+            logger.error(`Bookmark with id: ${id} not found`)
+            return res
+                .status(404)
+                .send('Bookmark not found')
+        }
+
+        bookmarks.splice(bookmarkIndex, 1)
+
+        logger.info(`List with id: ${id} deleted`)
+        res
+            .status(204)
+            .end()
     })
 
 module.exports = bookmarkRouter
