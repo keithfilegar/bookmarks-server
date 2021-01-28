@@ -13,7 +13,53 @@ bookmarkRouter
             .json(bookmarks)
     })
     .post(bodyParser, (req, res) => {
+        const { title, url, rating, desc = '' } = req.body
+        if(!title) {
+            logger.error(`Title is required`)
+            return res
+                .status(400)
+                .send('Invalid data')
+        }
 
+        if(!url) {
+            logger.error(`URL is required`)
+            return res
+                .status(400)
+                .send('Invalid data')
+        }
+
+        if(!rating) {
+            logger.error(`Rating is required`)
+            return res
+                .status(400)
+                .send('Invalid data')
+        }
+
+        if(rating < 1 || rating > 5) {
+            logger.error('Rating must be between 1 and 5')
+            return res
+                .status(400)
+                .send('Invalid data')
+        }
+
+        const id = uuid()
+
+        const bookmark = {
+            id,
+            title,
+            url,
+            rating,
+            desc
+        }
+
+        bookmarks.push(bookmark)
+
+        logger.info(`Bookmark with id ${id} created`)
+
+        res
+            .status(201)
+            .location(`http://localhost:8000/bookmarks/${id}`)
+            .json(bookmark)
     })
 
 bookmarkRouter
