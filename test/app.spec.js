@@ -34,7 +34,7 @@ describe('Bookmarks Endpoints', function() {
 
         context(`Given data in db`, () => {
             const testBookmarks = makeBookmarksArray()
-            
+
             beforeEach('insert bookmarks', () => {
                 return db
                     .into('bookmarks')
@@ -46,6 +46,38 @@ describe('Bookmarks Endpoints', function() {
                     .get('/bookmarks')
                     .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
                     .expect(200, testBookmarks)
+            })
+        })
+    })
+
+    describe(`GET /bookmarks/:bookmarkId`, () => {
+        context(`Given empty db`, () => {
+            it(`responds with a 404`, () => {
+                const bookmarkId = 123123123
+                return supertest(app)
+                    .get(`/bookmarks/${bookmarkId}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(404, { error: { message: `Bookmark doesn't exist` } })
+            })
+        })
+
+        context(`Given data in db`, () => {
+            const testBookmarks = makeBookmarksArray()
+
+            beforeEach('insert bookmarks', () => {
+                return db
+                    .into('bookmarks')
+                    .insert(testBookmarks)
+            })
+
+            it(`responds with 200 and correlating bookmark`, () => {
+                const bookmarkId = 3
+                const expected = testBookmarks[bookmarkId - 1]
+                return supertest(app)
+                .get(`/bookmarks/${bookmarkId}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(200, expected)
+
             })
         })
     })
