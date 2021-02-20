@@ -1,34 +1,50 @@
+  
 function makeBookmarksArray() {
     return [
         {
             id: 1,
-            title: "Google",
-            url: "www.google.com",
-            description: "Search for stuff",
-            rating: 5
+            title: 'Thinkful',
+            url: 'https://www.thinkful.com',
+            description: 'Think outside the classroom',
+            rating: 5,
         },
         {
             id: 2,
-            title: "IGN",
-            url: "www.ign.com",
-            description: "Video game stuff",
-            rating: 2
+            title: 'Google',
+            url: 'https://www.google.com',
+            description: 'Where we find everything else',
+            rating: 4,
         },
         {
             id: 3,
-            title: "Github",
-            url: "www.github.com",
-            description: "Code stuff",
-            rating: 5
-        },
-        {
-            id: 4,
-            title: "Twitch",
-            url: "www.twitch.tv",
-            description: "Watch stuff",
-            rating: 3
+            title: 'MDN',
+            url: 'https://developer.mozilla.org',
+            description: 'The only place to find web documentation',
+            rating: 5,
         },
     ]
 }
 
-module.exports = { makeBookmarksArray }
+function makeMaliciousBookmark() {
+    const maliciousBookmark = {
+        id: 911,
+        title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        url: 'https://www.hackers.com',
+        description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+        rating: 1,
+    }
+    const expectedBookmark = {
+        ...maliciousBookmark,
+        title: 'Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
+        description: `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`
+    }
+    return {
+        maliciousBookmark,
+        expectedBookmark,
+    }
+}
+  
+module.exports = {
+    makeBookmarksArray,
+    makeMaliciousBookmark,
+}
