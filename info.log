@@ -96,3 +96,5 @@
 {"message":"Bookmark with id 123456 not found.","level":"error"}
 {"message":"Bookmark with id 123456 not found.","level":"error"}
 {"message":"Bookmark with id 123456 not found.","level":"error"}
+{"message":"Bookmark with id 6 created.","level":"info"}
+{"message":"Bookmark with id 6 deleted.","level":"info"}
