@@ -1,6 +1,7 @@
 const knex = require('knex')
 const fixtures = require('./bookmarks.fixtures')
 const app = require('../src/app')
+const supertest = require('supertest')
 
 describe('Bookmarks Endpoints', () => {
     let db
@@ -311,6 +312,93 @@ describe('Bookmarks Endpoints', () => {
             expect(res.body.title).to.eql(expectedBookmark.title)
             expect(res.body.description).to.eql(expectedBookmark.description)
             })
+        })
+    })
+
+    describe.only(`PATCH /api/bookmarks/:bookmark_id`, () => {
+        const testBookmarks = fixtures.makeBookmarksArray()
+
+        const newBookmark = {
+            title: 'test-title',
+            url: 'https://test.com',
+            description: 'test description',
+            rating: 1,
+        }
+
+        beforeEach('insert bookmarks', () => {
+        return db
+            .into('bookmarks')
+            .insert(testBookmarks)
+        })
+
+        it(`responds with 204 and updates bookmark`, () => {
+            const idToUpdate = 2
+            const expectedBookmark = {
+                ...testBookmarks[idToUpdate - 1],
+                ...newBookmark
+            }
+            return supertest(app)
+                .patch(`/api/bookmarks/${idToUpdate}`)
+                .send(newBookmark)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(204)
+                .then(res => 
+                    supertest(app)
+                    .get(`/api/bookmarks/${idToUpdate}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(expectedBookmark)
+                )
+        })
+
+        it(`responds with 204 with a partial bookmark update`, () => {
+            const idToupdate = 2
+
+            const updateBookmark = {
+                title: 'updated bookmark title'
+            }
+            const expectedBookmark = {
+                ...testBookmarks[idToupdate - 1],
+                ...updateBookmark
+            }
+
+            return supertest(app)
+                .patch(`/api/bookmarks/${idToupdate}`)
+                .send({...updateBookmark})
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(204)
+                .then(res => {
+                    supertest(app)
+                    .get(`/api/bookmarks/${idToupdate}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(expectedBookmark)
+                })
+        })
+
+        it(`responds with 400 if request is doesn't contain a required field`, () => {
+            const idToUpdate = 2
+            const badBookmark = {
+                nonsense: 'this should fail'
+            }
+
+            return supertest(app)
+                .patch(`/api/bookmarks/${idToUpdate}`)
+                .send(badBookmark)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(400, {
+                    error: {
+                        message: `Request body must contain either 'title', 'url', 'description', 'rating'`
+                    }
+                })
+        })
+
+        it(`responds with 404 if bookmark isn't found`, () => {
+            const badBookmarkId = 123456
+
+            return supertest(app)
+                .patch(`/api/bookmarks/${badBookmarkId}`)
+                .send(newBookmark)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(404)
         })
     })
 })
